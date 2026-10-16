@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: Compose Up (Build & Start)",
+      "type": "shell",
+      "command": "docker compose up --build -d",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Compose Down (Stop Containers)",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: Run Invalid Quantity Validation Suite",
+      "type": "npm",
+      "script": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Commerce: Reset Cart to Baseline",
+      "type": "shell",
+      "command": "node -e \"fetch('http://localhost:5000/api/cart/reset', { method: 'POST' }).then(r => r.json()).then(console.log)\"",
+      "problemMatcher": []
+    }
+  ]
+}

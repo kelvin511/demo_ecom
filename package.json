@@ -1,0 +1,30 @@
+{
+  "name": "demo-ecom-backend",
+  "version": "1.0.0",
+  "description": "Local commerce backend with synthetic products and resettable cart for API validation",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node scripts/test-runner.js",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "ecommerce",
+    "cart-api",
+    "docker",
+    "testing",
+    "postman",
+    "validation"
+  ],
+  "author": "QA & Storefront Engineering Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
