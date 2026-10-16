@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node scripts/test-runner.js",
+    "test:newman": "newman run postman/cart-api-validation.postman_collection.json -e postman/cart-api-validation.postman_environment.json",
+    "cart:reset": "node -e \"fetch('http://localhost:5000/api/cart/reset', { method: 'POST' }).then(r => r.json()).then(console.log)\"",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
@@ -19,6 +21,7 @@
     "docker",
     "testing",
     "postman",
+    "newman",
     "validation"
   ],
   "author": "QA & Storefront Engineering Team",
@@ -26,5 +29,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1"
   }
 }

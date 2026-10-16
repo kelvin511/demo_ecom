@@ -717,6 +717,302 @@
           "body": "{\n  \"success\": true,\n  \"message\": \"Successfully added 2x \\\"Wireless Noise-Canceling Headphones\\\" to the cart.\",\n  \"cart\": {\n    \"cartId\": \"default-cart\",\n    \"items\": [\n      {\n        \"productId\": \"prod_101\",\n        \"sku\": \"TECH-WH1000-BLK\",\n        \"name\": \"Wireless Noise-Canceling Headphones\",\n        \"price\": 199.99,\n        \"quantity\": 2,\n        \"itemTotal\": 399.98\n      }\n    ],\n    \"totalItems\": 2,\n    \"subtotal\": 399.98,\n    \"currency\": \"USD\",\n    \"createdAt\": \"2026-10-16T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-16T12:00:00.000Z\"\n  }\n}"
         }
       ]
+    },
+    {
+      "name": "13. Case 1B - Reject Negative Quantity on Populated Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"prod_101\",\n  \"quantity\": -5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/cart/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart", "items"]
+        },
+        "description": "Verifies that negative quantity is rejected even when the cart already contains items, preventing balance tampering."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test('Returns NegativeQuantity error', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.error).to.eql('NegativeQuantity');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "400 Bad Request (Negative Qty on Populated Cart)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"prod_101\",\n  \"quantity\": -5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "items"]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": \"NegativeQuantity\",\n  \"message\": \"Quantity cannot be negative. Received -5.\",\n  \"received\": {\n    \"productId\": \"prod_101\",\n    \"quantity\": -5\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "14. Verify Populated Cart Unchanged after Case 1B",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart"]
+        },
+        "description": "Verifies that existing items (quantity 2, $399.98) remain intact."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Populated cart remains intact with 2 items', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.cart.items.length).to.eql(1);",
+              "    pm.expect(jsonData.cart.totalItems).to.eql(2);",
+              "    pm.expect(jsonData.cart.subtotal).to.eql(399.98);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "200 Populated Cart Intact",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+          ],
+          "body": "{\n  \"success\": true,\n  \"cart\": {\n    \"cartId\": \"default-cart\",\n    \"items\": [\n      {\n        \"productId\": \"prod_101\",\n        \"sku\": \"TECH-WH1000-BLK\",\n        \"name\": \"Wireless Noise-Canceling Headphones\",\n        \"price\": 199.99,\n        \"quantity\": 2,\n        \"itemTotal\": 399.98\n      }\n    ],\n    \"totalItems\": 2,\n    \"subtotal\": 399.98,\n    \"currency\": \"USD\",\n    \"createdAt\": \"2026-10-16T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-16T12:00:00.000Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "15. Case 4B - Reject Overflow on Existing Cart Quantity",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"prod_101\",\n  \"quantity\": 14\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/cart/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart", "items"]
+        },
+        "description": "Product has 15 total stock. Cart already has 2 items. Adding 14 would equal 16, exceeding total stock."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 422 Unprocessable Entity', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test('Returns InsufficientStock accounting for existing quantity', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.error).to.eql('InsufficientStock');",
+              "    pm.expect(jsonData.details.currentCartQuantity).to.eql(2);",
+              "    pm.expect(jsonData.details.maximumAddable).to.eql(13);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "422 Unprocessable Entity (Combined Stock Overflow)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"prod_101\",\n  \"quantity\": 14\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "items"]
+            }
+          },
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "_postman_previewlanguage": "json",
+          "header": [
+            { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": \"InsufficientStock\",\n  \"message\": \"Requested quantity (14) plus existing cart quantity (2) exceeds available inventory for \\\"Wireless Noise-Canceling Headphones\\\". Only 15 available.\",\n  \"details\": {\n    \"productId\": \"prod_101\",\n    \"productName\": \"Wireless Noise-Canceling Headphones\",\n    \"availableStock\": 15,\n    \"currentCartQuantity\": 2,\n    \"requestedAddition\": 14,\n    \"maximumAddable\": 13\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "16. Verify Populated Cart Unchanged after Case 4B",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart"]
+        },
+        "description": "Verifies that cart still has exactly 2 items after rejected stock overflow."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Cart is still at 2 items', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.cart.items.length).to.eql(1);",
+              "    pm.expect(jsonData.cart.totalItems).to.eql(2);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "200 Populated Cart Intact",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+          ],
+          "body": "{\n  \"success\": true,\n  \"cart\": {\n    \"cartId\": \"default-cart\",\n    \"items\": [\n      {\n        \"productId\": \"prod_101\",\n        \"sku\": \"TECH-WH1000-BLK\",\n        \"name\": \"Wireless Noise-Canceling Headphones\",\n        \"price\": 199.99,\n        \"quantity\": 2,\n        \"itemTotal\": 399.98\n      }\n    ],\n    \"totalItems\": 2,\n    \"subtotal\": 399.98,\n    \"currency\": \"USD\",\n    \"createdAt\": \"2026-10-16T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-16T12:00:00.000Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "17. Teardown - Reset Cart to Pristine Baseline",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cartId\": \"default-cart\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/cart/reset",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart", "reset"]
+        },
+        "description": "Restores the cart to pristine empty state."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Cart is cleanly cleared', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.cart.items.length).to.eql(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "200 Final Reset",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"default-cart\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "reset"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Cart has been successfully reset.\",\n  \"cart\": {\n    \"cartId\": \"default-cart\",\n    \"items\": [],\n    \"totalItems\": 0,\n    \"subtotal\": 0,\n    \"currency\": \"USD\",\n    \"createdAt\": \"2026-10-16T12:00:00.000Z\",\n    \"updatedAt\": \"2026-10-16T12:00:00.000Z\"\n  }\n}"
+        }
+      ]
     }
   ]
 }

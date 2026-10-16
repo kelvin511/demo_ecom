@@ -53,9 +53,9 @@ async function runTests() {
     const baselineCart = await getCart();
 
     // =========================================================================
-    // CASE 1: Negative Quantity (quantity: -1)
+    // CASE 1: Negative Quantity (quantity: -1) on Empty Cart
     // =========================================================================
-    console.log('\n--- Case 1: Negative Quantity ---');
+    console.log('\n--- Case 1: Negative Quantity (Empty Cart) ---');
     const case1Res = await fetch(`${BASE_URL}/api/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +90,6 @@ async function runTests() {
     // CASE 3: Non-Numeric / Fractional / Invalid Format
     // =========================================================================
     console.log('\n--- Case 3: Non-Numeric & Non-Integer Types ---');
-    // 3a. String value
     const case3aRes = await fetch(`${BASE_URL}/api/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -98,7 +97,6 @@ async function runTests() {
     });
     const case3aData = await case3aRes.json();
 
-    // 3b. Fractional value (1.5)
     const case3bRes = await fetch(`${BASE_URL}/api/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -117,7 +115,7 @@ async function runTests() {
     // CASE 4: Exceeding Available Stock Inventory
     // =========================================================================
     console.log('\n--- Case 4: Quantity Exceeding Inventory Stock ---');
-    const excessiveQuantity = targetProduct.stock + 1000; // e.g. 1015 when stock is 15
+    const excessiveQuantity = targetProduct.stock + 1000;
     const case4Res = await fetch(`${BASE_URL}/api/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -128,23 +126,58 @@ async function runTests() {
     const case4Rejected = (case4Res.status === 422 || case4Res.status === 400) && case4Data.error === 'InsufficientStock';
     const case4CartUnchanged = JSON.stringify(baselineCart.items) === JSON.stringify(case4Cart.items) && case4Cart.totalItems === 0;
 
-    recordResult(`Case 4: HTTP 422 Unprocessable Entity on Stock Overflow (${excessiveQuantity} > ${targetProduct.stock})`, case4Rejected, `HTTP ${case4Res.status} | error: "${case4Data.error}" | msg: "${case4Data.message}"`);
+    recordResult(`Case 4: HTTP 422 Unprocessable Entity on Stock Overflow (${excessiveQuantity} > ${targetProduct.stock})`, case4Rejected, `HTTP ${case4Res.status} | error: "${case4Data.error}"`);
     recordResult('Case 4: Cart strictly unchanged after inventory overflow attempt', case4CartUnchanged, `Cart items before: ${baselineCart.items.length}, after: ${case4Cart.items.length}`);
 
     // =========================================================================
-    // POSITIVE CONTROL: Valid Quantity Addition
+    // POSITIVE CONTROL: Valid Quantity Addition (Populating Cart)
     // =========================================================================
-    console.log('\n--- Positive Control: Valid Quantity Addition ---');
+    console.log('\n--- Positive Control: Populating Cart with Valid Quantity (2) ---');
     const validRes = await fetch(`${BASE_URL}/api/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId: targetProduct.id, quantity: 2 })
     });
     const validData = await validRes.json();
-    const updatedCart = await getCart();
-    const validPassed = validRes.status === 200 && updatedCart.items.length === 1 && updatedCart.items[0].quantity === 2;
+    const populatedCart = await getCart();
+    const validPassed = validRes.status === 200 && populatedCart.items.length === 1 && populatedCart.totalItems === 2;
 
-    recordResult('Positive Control: Valid quantity (2) accepted and cart updated', validPassed, `Cart items: ${updatedCart.items.length}, total items: ${updatedCart.totalItems}, subtotal: $${updatedCart.subtotal}`);
+    recordResult('Positive Control: Valid quantity (2) accepted and cart updated', validPassed, `Cart items: ${populatedCart.items.length}, total items: ${populatedCart.totalItems}, subtotal: $${populatedCart.subtotal}`);
+
+    // =========================================================================
+    // CASE 1B: Negative Quantity Attempt on Populated Cart
+    // =========================================================================
+    console.log('\n--- Case 1B: Negative Quantity Attempt on Populated Cart ---');
+    const case1bRes = await fetch(`${BASE_URL}/api/cart/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: targetProduct.id, quantity: -5 })
+    });
+    const case1bData = await case1bRes.json();
+    const cartAfter1b = await getCart();
+    const case1bRejected = case1bRes.status === 400 && case1bData.error === 'NegativeQuantity';
+    const case1bCartIntact = cartAfter1b.items.length === 1 && cartAfter1b.totalItems === 2 && cartAfter1b.subtotal === populatedCart.subtotal;
+
+    recordResult('Case 1B: HTTP 400 Bad Request on Negative Qty (-5) on Populated Cart', case1bRejected, `HTTP ${case1bRes.status} | error: "${case1bData.error}"`);
+    recordResult('Case 1B: Populated cart integrity strictly preserved (items: 1, count: 2, subtotal: $399.98)', case1bCartIntact, `Original 2 items preserved, subtotal: $${cartAfter1b.subtotal}`);
+
+    // =========================================================================
+    // CASE 4B: Stock Overflow on Top of Existing Cart Quantity
+    // =========================================================================
+    console.log('\n--- Case 4B: Stock Overflow Accounting for Existing Quantity ---');
+    // Product stock is 15. Cart already has 2. Requesting 14 makes 16 > 15!
+    const case4bRes = await fetch(`${BASE_URL}/api/cart/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: targetProduct.id, quantity: 14 })
+    });
+    const case4bData = await case4bRes.json();
+    const cartAfter4b = await getCart();
+    const case4bRejected = case4bRes.status === 422 && case4bData.error === 'InsufficientStock';
+    const case4bCartIntact = cartAfter4b.items.length === 1 && cartAfter4b.totalItems === 2;
+
+    recordResult('Case 4B: HTTP 422 Unprocessable Entity on Combined Stock Overflow (2 + 14 > 15)', case4bRejected, `HTTP ${case4bRes.status} | error: "${case4bData.error}" | max addable: ${case4bData.details?.maximumAddable}`);
+    recordResult('Case 4B: Populated cart integrity strictly preserved', case4bCartIntact, `Cart remained unchanged at ${cartAfter4b.totalItems} items`);
 
     // =========================================================================
     // CLEANUP / RESET VERIFICATION
@@ -160,7 +193,7 @@ async function runTests() {
     console.log('===============================================================');
 
     if (passedTests === totalTests) {
-      console.log('🎉 ALL FOUR QUANTITY CASES AND CART INTEGRITY CHECKS PASSED!\n');
+      console.log('🎉 ALL FOUR QUANTITY CASES, EDGE SCENARIOS, AND CART INTEGRITY CHECKS PASSED!\n');
       return true;
     } else {
       console.error('❌ SOME TESTS FAILED!\n');
