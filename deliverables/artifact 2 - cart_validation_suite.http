@@ -1,0 +1,148 @@
+### ==============================================================================
+### Cart API Pre-Release Validation Suite (VS Code REST Client)
+### Target Base URL: http://localhost:5000
+### ==============================================================================
+
+@baseUrl = http://localhost:5000
+@productId = prod_101
+
+### 01. Pre-Check: Service Health Check
+GET {{baseUrl}}/api/health
+
+### 02. Pre-Check: Get Synthetic Product Catalog
+GET {{baseUrl}}/api/products
+
+### 03. Setup: Reset Cart to Pristine Baseline (0 items)
+POST {{baseUrl}}/api/cart/reset
+Content-Type: application/json
+
+{
+  "cartId": "default-cart"
+}
+
+### 04. Baseline Cart Check: Verify Empty
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 1: REJECT NEGATIVE QUANTITY (-1)
+### Expected: 400 Bad Request, NegativeQuantity error, Cart Unchanged
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": -1
+}
+
+### 05. Verify Cart Unchanged after Case 1 (Should be 0 items)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 2: REJECT ZERO QUANTITY (0)
+### Expected: 400 Bad Request, ZeroQuantity error, Cart Unchanged
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 0
+}
+
+### 06. Verify Cart Unchanged after Case 2 (Should be 0 items)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 3: REJECT NON-NUMERIC & FRACTIONAL TYPES
+### Expected: 400 Bad Request, InvalidQuantityType error, Cart Unchanged
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": "invalid_qty_string"
+}
+
+### 07. Case 3B: Reject Fractional Float (1.5)
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 1.5
+}
+
+### 08. Verify Cart Unchanged after Case 3 (Should be 0 items)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 4: REJECT QUANTITY EXCEEDING AVAILABLE STOCK
+### Expected: 422 Unprocessable Entity, InsufficientStock, Cart Unchanged
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 9999
+}
+
+### 09. Verify Cart Unchanged after Case 4 (Should be 0 items)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### POSITIVE CONTROL: POPULATE CART WITH VALID QUANTITY (2)
+### Expected: 200 OK, 2 items in cart ($399.98)
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 2
+}
+
+### 10. Verify Populated Cart Contains 2 Items
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 1B: REJECT NEGATIVE QUANTITY ON POPULATED CART
+### Expected: 400 Bad Request, Existing 2 items remain completely intact
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": -5
+}
+
+### 11. Verify Populated Cart Intact (Still 2 items, $399.98)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### CASE 4B: REJECT STOCK OVERFLOW ON EXISTING QUANTITY (2 + 14 = 16 > 15)
+### Expected: 422 Unprocessable Entity, Cart remains at 2 items
+### ==============================================================================
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 14
+}
+
+### 12. Verify Populated Cart Intact (Still 2 items, $399.98)
+GET {{baseUrl}}/api/cart
+
+### ==============================================================================
+### FINAL CLEANUP: RESET CART TO PRISTINE BASELINE
+### ==============================================================================
+POST {{baseUrl}}/api/cart/reset
+Content-Type: application/json
+
+{
+  "cartId": "default-cart"
+}

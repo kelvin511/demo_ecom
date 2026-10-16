@@ -1,0 +1,68 @@
+[
+  {
+    "id": "prod_101",
+    "sku": "TECH-WH1000-BLK",
+    "name": "Wireless Noise-Canceling Headphones",
+    "description": "High-fidelity wireless over-ear headphones with active noise cancellation and 30-hour battery life.",
+    "price": 199.99,
+    "currency": "USD",
+    "stock": 15,
+    "category": "Electronics",
+    "active": true
+  },
+  {
+    "id": "prod_102",
+    "sku": "KB-MECH-PRO-RGB",
+    "name": "Ergonomic Mechanical Keyboard",
+    "description": "Custom mechanical keyboard with tactile switches, RGB backlighting, and detachable wrist rest.",
+    "price": 129.50,
+    "currency": "USD",
+    "stock": 8,
+    "category": "Accessories",
+    "active": true
+  },
+  {
+    "id": "prod_103",
+    "sku": "MON-UW-34-4K",
+    "name": "Ultra-Wide Curved Gaming Monitor 34-inch",
+    "description": "34-inch 144Hz curved ultrawide QHD gaming display with 99% sRGB color gamut.",
+    "price": 499.00,
+    "currency": "USD",
+    "stock": 4,
+    "category": "Electronics",
+    "active": true
+  },
+  {
+    "id": "prod_104",
+    "sku": "HUB-USBC-7IN1",
+    "name": "USB-C Multi-Port Adapter Hub",
+    "description": "Aluminum 7-in-1 USB-C hub with 4K HDMI, 100W Power Delivery, SD reader, and 3 USB 3.0 ports.",
+    "price": 39.99,
+    "currency": "USD",
+    "stock": 25,
+    "category": "Accessories",
+    "active": true
+  },
+  {
+    "id": "prod_105",
+    "sku": "MSE-WL-PREC-01",
+    "name": "Wireless Precision Gaming Mouse",
+    "description": "Ultra-lightweight wireless optical mouse with 26,000 DPI sensor and programmable macro buttons.",
+    "price": 69.00,
+    "currency": "USD",
+    "stock": 12,
+    "category": "Accessories",
+    "active": true
+  },
+  {
+    "id": "prod_106",
+    "sku": "DESK-PAD-XL-GRY",
+    "name": "Minimalist Desk Pad (XL)",
+    "description": "Water-resistant vegan leather desk mat measuring 900x400mm for keyboard and mouse comfort.",
+    "price": 24.00,
+    "currency": "USD",
+    "stock": 50,
+    "category": "Office",
+    "active": true
+  }
+]

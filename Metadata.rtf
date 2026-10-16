@@ -1,0 +1,46 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;\red0\green102\blue204;\red80\green80\blue80;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\cf2\b\f0\fs28 TASK METADATA & REPRODUCTION SHEET\par
+\pard\cf3\b0\fs18 Generated for Mercor AI Studio / Data Annotation Review\par
+\cf0\fs22\par
+\pard\b Task Title:\b0\par
+Check whether a cart API rejects invalid quantities\par
+\par
+\b Purpose & Who Will Use The Result:\b0\par
+Before a storefront release, determine whether one cart endpoint reliably rejects invalid quantities without changing the cart. The result will be used by the storefront release team, QA engineers, and backend API developers.\par
+\par
+\b Starting Materials:\b0\par
+Using existing material: Local commerce backend running in Docker Desktop, synthetic products catalog, a resettable cart.\par
+\par
+\b Apps Used:\b0\par
+Visual Studio Code, Docker Desktop\par
+\par
+\b Occupational / Task Area (OTA):\b0\par
+Software Engineering / QA & API Testing / Web Development\par
+\par
+\b What Was Created, Analyzed, or Decided:\b0\par
+Analyzed whether the cart API endpoint reliably rejects four invalid quantity cases (negative quantity, zero quantity, non-numeric and fractional types, and inventory stock overflow) without altering cart state or corrupting data integrity. Delivered a pre-release decision to the storefront release team.\par
+\par
+\b Verification Method & Findings:\b0\par
+Verified using an in-editor HTTP validation suite, automated test runner, and a saved Postman collection with response examples and assertions. All four invalid quantity cases were correctly rejected with HTTP 400 Bad Request and 422 Unprocessable Entity, while follow-up queries confirmed cart state remained strictly unchanged. Pre-release recommendation: APPROVED FOR STOREFRONT RELEASE.\par
+\par
+\b Deliverables List:\b0\par
+- input 1 - synthetic_products.json\par
+- artifact 1 - cart_api_validation.postman_collection.json\par
+- artifact 2 - cart_validation_suite.http\par
+- final output 1 - cart_quantity_rejection_findings_report.md\par
+\par
+\b Step-by-Step Workflow Summary:\b0\par
+1. Inspected starting materials in Visual Studio Code (synthetic products, cart route schema, and defensive validation in cartService.js).\par
+2. Inspected containerized backend status and health check in Docker Desktop.\par
+3. Executed baseline health check and cart reset in Visual Studio Code.\par
+4. Tested Case 1 (Negative Quantity -1): Confirmed HTTP 400 Bad Request and verified cart state remained unchanged.\par
+5. Tested Case 2 (Zero Quantity 0): Confirmed HTTP 400 Bad Request and verified cart state remained unchanged.\par
+6. Tested Case 3 (Non-Numeric String and Fractional Float 1.5): Confirmed HTTP 400 Bad Request and verified cart state remained unchanged.\par
+7. Tested Case 4 (Stock Limit Overflow 9999): Confirmed HTTP 422 Unprocessable Entity with available stock breakdown and verified cart state remained unchanged.\par
+8. Tested Positive Control and Populated Cart Edge Cases (Negative quantity and stock overflow against an already populated cart) to verify existing cart balances cannot be corrupted.\par
+9. Executed Newman CLI in terminal to validate the complete Postman collection headlessly.\par
+10. Inspected live HTTP request log bursts in Docker Desktop.\par
+11. Synthesized test observations into the final pre-release findings report (FINDINGS.md) and approved release.\par
+}
