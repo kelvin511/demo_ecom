@@ -10,6 +10,7 @@
     "test": "node scripts/test-runner.js",
     "test:newman": "newman run postman/cart-api-validation.postman_collection.json -e postman/cart-api-validation.postman_environment.json",
     "cart:reset": "node -e \"fetch('http://localhost:5000/api/cart/reset', { method: 'POST' }).then(r => r.json()).then(console.log)\"",
+    "package:deliverables": "node scripts/package-deliverables.js",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
